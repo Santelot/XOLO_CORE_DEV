@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ada AI • Interfaz Educativa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gradient-start-color: #8E2DE2;
+      --gradient-end-color: #4A00E0;
+      --gradient-start-rgb: 142, 45, 226;
+      --gradient-end-rgb: 74, 0, 224;
+
+      --bg-dark: #0A0915;
+      --bg-panel: #16152A;
+      --bg-panel-secondary: #211E3D;
+      --text-light: #F0F0F0;
+      --text-muted: #A9A4E8;
+      --font-main: 'Inter', system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    }
+    
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background-color: var(--bg-panel-secondary); border-radius: 6px; }
+
+    html, body {
+      height: 100%; margin: 0;
+      color: var(--text-light);
+      font-family: var(--font-main);
+      font-size: 16px;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(circle at 50% 50%, rgba(var(--gradient-end-rgb), 0.1), transparent 50%);
+    }
+
+    [hidden] { display: none !important; }
+
+    .main-container {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%; padding: 2vh 2vw; box-sizing: border-box;
+    }
+
+    /* --- Estilos para el contenedor de Login --- */
+    .login-container {
+      display: flex; flex-direction: column; gap: 24px;
+      background-color: var(--bg-dark);
+      padding: 40px; border-radius: 24px; width: 100%; max-width: 400px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+    @keyframes rotateGradient { 0% {--angle: 0deg;} 100% {--angle: 360deg;} }
+    .login-container::before {
+      content: ""; position: absolute; inset: -2px; z-index: -1; border-radius: 26px;
+      background: conic-gradient(from var(--angle, 0deg) at 50% 50%, var(--gradient-end-color), var(--gradient-start-color), var(--gradient-end-color));
+      animation: rotateGradient 10s linear infinite;
+    }
+    .login-container h2 { text-align: center; margin: 0 0 8px 0; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .login-container p { text-align: center; color: var(--text-muted); font-size: 15px; margin: 0; }
+    .login-input { width: 100%; padding: 16px; border-radius: 14px; font-size: 1rem; border: 1px solid var(--bg-panel-secondary); background: var(--bg-panel); color: var(--text-light); outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease; box-sizing: border-box; }
+    .login-input:focus { border-color: var(--gradient-start-color); box-shadow: 0 0 8px rgba(var(--gradient-start-rgb), 0.6); }
+    .login-btn { width: 100%; border: none; padding: 16px; border-radius: 14px; background: linear-gradient(45deg, var(--gradient-end-color), var(--gradient-start-color)); color: white; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.3s ease; }
+    .login-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--gradient-start-rgb), 0.5); }
+    .login-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .app { display: grid; grid-template-rows: auto 1fr auto; width: 100%; height: 100%; max-width: 900px; max-height: 95vh; background-color: var(--bg-dark); border-radius: 24px; overflow: hidden; position: relative; box-shadow: 0 0 40px rgba(0, 0, 0, 0.5); }
+    .app::before { content: ""; position: absolute; inset: -2px; z-index: -1; border-radius: 26px; background: conic-gradient(from var(--angle, 0deg) at 50% 50%, var(--gradient-end-color), var(--gradient-start-color), var(--gradient-end-color)); animation: rotateGradient 10s linear infinite; }
+
+    header { padding: 16px 24px; background: var(--bg-panel); display: flex; gap: 12px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, var(--gradient-end-color), var(--gradient-start-color)); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(var(--gradient-start-rgb), 0.6); }
+    header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+    #uid-pill { background: var(--bg-panel-secondary); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--text-muted); }
+
+    .chat { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .msg { max-width: 75%; padding: 14px 18px; border-radius: 20px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; animation: fadeInUp 0.4s ease-out; }
+    .user { align-self: flex-end; background: linear-gradient(135deg, var(--gradient-end-color), var(--gradient-start-color)); border-radius: 20px 20px 4px 20px; color: white; }
+    .bot { align-self: flex-start; background: var(--bg-panel); border-radius: 20px 20px 20px 4px; box-shadow: 0 0 15px rgba(var(--gradient-start-rgb), 0.2); }
+    .bot .md * { box-sizing: border-box; } .bot .md { white-space: normal; } .bot .md p { margin: 0 0 0.75rem 0; }
+    .bot .md h1, .bot .md h2, .bot .md h3, .bot .md h4, .bot .md h5, .bot .md h6 { margin: 0.2rem 0 0.6rem 0; line-height: 1.25; font-weight: 700; }
+    .bot .md h1 { font-size: 1.35rem; } .bot .md h2 { font-size: 1.2rem; } .bot .md h3 { font-size: 1.1rem; }
+    .bot .md ul, .bot .md ol { margin: 0.25rem 0 0.75rem 1.25rem; padding-left: 1rem; }
+    .bot .md code { background: rgba(255,255,255,0.08); padding: 0.1rem 0.35rem; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .bot .md pre { background: #0e0d1c; border: 1px solid var(--bg-panel-secondary); padding: 12px; border-radius: 12px; overflow: auto; margin: 0.5rem 0 1rem; }
+    .bot .md pre code { background: transparent; padding: 0; display: block; }
+    .code-block { border: 1px solid var(--bg-panel-secondary); border-radius: 12px; margin: 0.5rem 0 1rem; background: #0e0d1c; overflow: hidden; }
+    .code-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; padding: 8px; background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--bg-panel-secondary); }
+    .code-actions button { border: 1px solid var(--bg-panel-secondary); background: transparent; color: var(--text-muted); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .code-actions button:hover { background: var(--bg-panel-secondary); color: var(--text-light); }
+    .code-body { max-height: 600px; transition: max-height 0.2s ease; }
+    .code-body.collapsed { max-height: 0; overflow: hidden; }
+
+    .thinking { display: flex; align-items: center; justify-content: center; height: 24px; gap: 4px; }
+    .thinking .bar { width: 4px; height: 100%; border-radius: 2px; background-color: var(--text-muted); animation: wave 1.2s ease-in-out infinite; }
+    .thinking .bar:nth-child(2) { animation-delay: 0.1s; } .thinking .bar:nth-child(3) { animation-delay: 0.2s; }
+    @keyframes wave { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+
+    .inputbar { background: var(--bg-panel); border-top: 1px solid var(--bg-panel-secondary); padding: 16px 24px; flex-shrink: 0; }
+    .input-row { display: flex; gap: 12px; align-items: flex-end; }
+    textarea { flex: 1; resize: none; min-height: 52px; max-height: 150px; border-radius: 14px; padding: 16px; border: 1px solid var(--bg-panel-secondary); background: var(--bg-dark); color: var(--text-light); outline: none; font-size: 1rem; font-family: var(--font-main); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+    textarea:focus { border-color: var(--gradient-start-color); box-shadow: 0 0 8px rgba(var(--gradient-start-rgb), 0.6); }
+    #sendBtn { border: none; background: linear-gradient(45deg, var(--gradient-end-color), var(--gradient-start-color)); color: white; width: 52px; height: 52px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.2s ease, box-shadow 0.3s ease; }
+    #sendBtn:hover:not(:disabled) { transform: scale(1.1); box-shadow: 0 0 12px rgba(var(--gradient-start-rgb), 0.8); }
+    #sendBtn:disabled { opacity: .4; cursor: not-allowed; transform: scale(1); box-shadow: none; }
+    .toolbar { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .toolbar-btn { border: 1px solid var(--bg-panel-secondary); background: transparent; color: var(--text-muted); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 500; font-size: 13px; transition: background-color 0.3s ease, color 0.3s ease; }
+    .toolbar-btn:hover:not(:disabled) { background: var(--bg-panel-secondary); color: var(--text-light); }
+    .toolbar-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .ai-loading-backdrop { position: fixed; inset: 0; z-index: 99; display: flex; align-items: center; justify-content: center; flex-direction: column; background: radial-gradient(1200px 600px at 50% 50%, rgba(var(--gradient-start-rgb),0.15), transparent 60%), rgba(10,9,21,0.92); backdrop-filter: blur(6px); animation: loaderFadeIn .25s ease-out; }
+    @keyframes loaderFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .ai-loading-backdrop.hide { opacity: 0; transform: scale(0.98); transition: opacity .35s ease, transform .35s ease; pointer-events: none; }
+    .ai-orbital { width: 140px; height: 140px; position: relative; border-radius: 50%; box-shadow: 0 0 40px rgba(var(--gradient-start-rgb), 0.45), inset 0 0 30px rgba(var(--gradient-end-rgb), 0.25); background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0) 40%), linear-gradient(135deg, rgba(var(--gradient-start-rgb), 0.4), rgba(var(--gradient-end-rgb), 0.4)); overflow: visible; }
+    .ai-orbital::before, .ai-orbital::after { content: ""; position: absolute; inset: -18px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.15); animation: orbit 3.6s linear infinite; }
+    .ai-orbital::after { inset: -34px; animation-duration: 6.4s; border-style: solid; border-color: rgba(255,255,255,0.07); }
+    @keyframes orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .ai-node { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: white; top: 50%; left: 50%; transform-origin: -60px -60px; box-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 18px rgba(var(--gradient-start-rgb), 0.6); animation: nodeSpin 2.2s ease-in-out infinite; }
+    .ai-node:nth-child(2) { transform-origin: -35px -35px; animation-duration: 1.6s; opacity: .9; }
+    .ai-node:nth-child(3) { transform-origin: -80px -20px; animation-duration: 2.8s; opacity: .75; }
+    @keyframes nodeSpin { 0% { transform: rotate(0deg) translateX(0); } 50% { transform: rotate(180deg) translateX(6px); } 100% { transform: rotate(360deg) translateX(0); } }
+    .ai-subtext { margin-top: 16px; color: var(--text-muted); font-size: 14px; letter-spacing: .3px; }
+
+    /* --- Estilos para el overlay de Alerta --- */
+    #alert-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background-color: rgba(176, 16, 16, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      animation: fadeInAlert .3s ease-out;
+    }
+    @keyframes fadeInAlert { from { opacity: 0; } to { opacity: 1; } }
+    .alert-box {
+      background-color: var(--bg-dark);
+      padding: 32px 40px; border-radius: 20px; text-align: center;
+      box-shadow: 0 0 60px rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.1);
+      max-width: 420px;
+    }
+    .alert-box h2 { font-size: 24px; margin: 0 0 12px 0; color: #ff8a8a; }
+    .alert-box p { font-size: 16px; color: var(--text-muted); margin: 0 0 24px 0; line-height: 1.6; }
+    #alert-password { width: 100%; box-sizing: border-box; }
+    #alert-submit { margin-top: 16px; }
+    #alert-password.error {
+        border-color: #ff5555;
+        animation: shake 0.4s;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-container">
+    <div class="login-container" id="login-container">
+      <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+        Bienvenido a Xolo AI
+      </h2>
+      <p>Ingresa tu nombre de usuario para iniciar o continuar tu conversación del día.</p>
+      <input type="text" id="username" class="login-input" placeholder="Escribe tu nombre de usuario aquí...">
+      <button id="loginBtn" class="login-btn">Entrar a la Conversación</button>
+    </div>
+    
+    <div class="app" id="app" hidden>
+      <header>
+        <div class="avatar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+        </div>
+        <h1>Xolo AI</h1>
+        <span id="uid-pill"></span>
+      </header>
+      <main class="chat" id="chat"></main>
+      <section class="inputbar">
+        <div class="input-row">
+          <textarea id="prompt" placeholder="Habla con Xolo AI..." disabled></textarea>
+          <button id="sendBtn" title="Enviar" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+        <div class="toolbar">
+          <button class="toolbar-btn" id="logoutBtn" title="Salir de la conversación actual" disabled>Salir de la Conversación</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="ai-loading-backdrop" id="ai-loader" hidden>
+    <div class="ai-orbital">
+      <span class="ai-node"></span><span class="ai-node"></span><span class="ai-node"></span>
+    </div>
+    <div class="ai-subtext">Inicializando motor de IA…</div>
+  </div>
+
+  <div id="alert-overlay" hidden>
+    <div class="alert-box">
+        <h2>Atención Requerida</h2>
+        <p>Se ha detectado una interacción que requiere la supervisión de un profesor. Por favor, avisa a tu maestro para continuar.</p>
+        <form id="alert-form">
+            <input type="password" id="alert-password" class="login-input" placeholder="Contraseña de profesor...">
+            <button type="submit" id="alert-submit" class="login-btn">Desbloquear</button>
+        </form>
+    </div>
+  </div>
+
+
+  <script>
+    /* ========================================================
+     * 🎨 UI & PERSONALIZACIÓN
+     * ======================================================== */
+    const UI_CONFIG = {
+      INITIAL_BOT_MESSAGE: "¡Hola! Soy Xolo, tu compañero de aprendizaje en Innovación y Tecnología. ¿Cómo te llamas? Por favor, dime tu nombre y cuéntame un poco sobre tus intereses: ¿te gusta el fútbol, la música, algún hobby, películas o animales? Con esa información podré personalizar nuestro aprendizaje. ¡Vamos a crear algo increíble hoy! ",
+      GRADIENT_COLOR_1: "#00d162", GRADIENT_COLOR_2: "#5500c4",
+      ALERT_PASSWORD: "P4L1S4D3:L1FT"
+    };
+
+    /* =========================
+     * ⚙️ CONFIG API
+     * ========================= */
+    const CHATBASE_CHATBOT_ID = "oSTY10WXrzUrKWp420JQ9";
+    const DEFAULT_TEMPERATURE = 0.6;
+    const OVERRIDE_MODEL = "gemini-1.5-flash";
+    const USE_STREAMING = true;
+
+    /* =========================
+     * 🧠 ESTADO & ELEMENTOS
+     * ========================= */
+    const appEl = document.getElementById("app");
+    const loginContainerEl = document.getElementById("login-container");
+    const usernameInput = document.getElementById("username");
+    const loginBtn = document.getElementById("loginBtn");
+    
+    const chatEl = document.getElementById("chat");
+    const promptEl = document.getElementById("prompt");
+    const sendBtn = document.getElementById("sendBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const uidPill = document.getElementById("uid-pill");
+    const aiLoader = document.getElementById("ai-loader");
+    
+    const alertOverlayEl = document.getElementById("alert-overlay");
+    const alertFormEl = document.getElementById("alert-form");
+    const alertPasswordInput = document.getElementById("alert-password");
+    let isAlertActive = false;
+    let audioCtx = null;
+    let alertSoundInterval = null;
+
+    let messages = [];
+    let userUID = null, conversationId = null;
+
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+    }
+
+    /* =========================
+     * ✅ INICIO Y LISTENERS
+     * ========================= */
+    window.addEventListener("chatbot:assistant_message", (e) => {
+      const msg = (e.detail?.text ?? "").trim();
+      if (msg.includes("AURORA_RETROFLEX")) {
+        triggerAlert();
+      }
+    });
+    
+    window.addEventListener("DOMContentLoaded", () => {
+      const root = document.documentElement;
+      root.style.setProperty('--gradient-start-color', UI_CONFIG.GRADIENT_COLOR_1);
+      root.style.setProperty('--gradient-end-color', UI_CONFIG.GRADIENT_COLOR_2);
+      root.style.setProperty('--gradient-start-rgb', hexToRgb(UI_CONFIG.GRADIENT_COLOR_1));
+      root.style.setProperty('--gradient-end-rgb', hexToRgb(UI_CONFIG.GRADIENT_COLOR_2));
+      loginBtn.addEventListener("click", handleLogin);
+      usernameInput.addEventListener("keydown", (e) => { if (e.key === "Enter") handleLogin(); });
+      sendBtn.addEventListener("click", onSend);
+      promptEl.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); }});
+      logoutBtn.addEventListener("click", handleLogout);
+      alertFormEl.addEventListener("submit", (e) => { e.preventDefault(); handleAlertSubmit(); });
+    });
+
+    function showLoader() { aiLoader.removeAttribute("hidden"); aiLoader.classList.remove("hide"); }
+    function hideLoader() { aiLoader.classList.add("hide"); setTimeout(() => { aiLoader.setAttribute("hidden", "true"); }, 350); }
+    
+    /* ==========================================================
+     * 🚨 SISTEMA DE ALERTA Y BLOQUEO
+     * ========================================================== */
+    function playBeep() {
+        if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error("Web Audio API no soportada."); return; }}
+        const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine'; oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        oscillator.start(); oscillator.stop(audioCtx.currentTime + 0.1);
+    }
+    function startAlertSound() {
+        if (alertSoundInterval) clearInterval(alertSoundInterval);
+        playBeep(); setTimeout(playBeep, 200);
+        alertSoundInterval = setInterval(() => { playBeep(); setTimeout(playBeep, 200); }, 3000);
+    }
+    function stopAlertSound() { if (alertSoundInterval) clearInterval(alertSoundInterval); alertSoundInterval = null; }
+
+    function triggerAlert() {
+        if (isAlertActive) return; isAlertActive = true;
+        promptEl.disabled = true; sendBtn.disabled = true; logoutBtn.disabled = true;
+        alertOverlayEl.removeAttribute("hidden");
+        startAlertSound();
+        setTimeout(() => alertPasswordInput.focus(), 100);
+    }
+    
+    function dismissAlert() {
+        if (!isAlertActive) return;
+        stopAlertSound(); alertOverlayEl.setAttribute("hidden", "true"); alertPasswordInput.value = ""; alertPasswordInput.classList.remove("error");
+        localStorage.setItem(`resolved_aurora_${conversationId}`, 'true');
+        isAlertActive = false;
+        promptEl.disabled = false; sendBtn.disabled = false; logoutBtn.disabled = false;
+        promptEl.focus();
+    }
+    
+    function handleAlertSubmit() {
+        const password = alertPasswordInput.value;
+        if (password === UI_CONFIG.ALERT_PASSWORD) {
+            dismissAlert();
+        } else {
+            alertPasswordInput.classList.add("error"); playBeep();
+            setTimeout(() => { alertPasswordInput.classList.remove("error"); }, 500);
+            alertPasswordInput.value = ""; alertPasswordInput.focus();
+        }
+    }
+    function checkAlertOnLoad() {
+        const lastBotMessage = messages.filter(m => m.role === 'assistant').pop();
+        if (lastBotMessage && lastBotMessage.content.includes("AURORA_RETROFLEX")) {
+            const isResolved = localStorage.getItem(`resolved_aurora_${conversationId}`) === 'true';
+            if (!isResolved) { triggerAlert(); }
+        }
+    }
+
+    /* =================================================
+     * 🔐 LÓGICA DE LOGIN Y GENERACIÓN DE ID
+     * ================================================= */
+    function getDateInUTC6() {
+      const now = new Date(); const utc6Date = new Date(now.getTime() - (6 * 60 * 60 * 1000));
+      return utc6Date.toISOString().split('T')[0];
+    }
+    async function deterministicHash(str) {
+        const msgUint8 = new TextEncoder().encode(str); const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return `cid-${hashHex.substring(0, 16)}`;
+    }
+    async function generateConversationIdForUser(username) {
+        const todayUTC6 = getDateInUTC6(); const seed = `${username.toLowerCase().trim()}-${todayUTC6}`;
+        return await deterministicHash(seed);
+    }
+    async function handleLogin() {
+        const username = usernameInput.value.trim(); if (!username) { alert("Por favor, ingresa un nombre de usuario."); return; }
+        userUID = username; conversationId = await generateConversationIdForUser(userUID);
+        loginContainerEl.setAttribute("hidden", "true"); appEl.removeAttribute("hidden");
+        updateBadges(); setupChatSession();
+    }
+    function handleLogout() {
+        appEl.setAttribute("hidden", "true"); loginContainerEl.removeAttribute("hidden");
+        userUID = null; conversationId = null; messages = []; chatEl.innerHTML = "";
+        usernameInput.value = ""; usernameInput.focus();
+        promptEl.disabled = true; sendBtn.disabled = true; logoutBtn.disabled = true;
+    }
+    function updateBadges() { uidPill.textContent = `Usuario: ${userUID ?? "—"}`; }
+
+    function setupChatSession() {
+      showLoader();
+      setTimeout(() => {
+        hideLoader();
+        messages = loadMessagesFor(conversationId);
+        checkAlertOnLoad();
+        if (messages.length === 0) { appendMessage("assistant", UI_CONFIG.INITIAL_BOT_MESSAGE); } 
+        else {
+          chatEl.innerHTML = "";
+          for (const m of messages) {
+            if (m.role === "assistant") { const el = appendBubbleOnly("assistant", "", true); renderAssistantMarkdownInto(el, m.content); } 
+            else { appendBubbleOnly(m.role, m.content); }
+          }
+          scrollToEnd();
+        }
+        if (!isAlertActive) {
+            promptEl.disabled = false; sendBtn.disabled = false; logoutBtn.disabled = false;
+            promptEl.focus();
+        }
+      }, 900);
+    }
+
+    /* =========================
+     * 🚀 POST /chat
+     * ========================= */
+    async function onSend() {
+      // MODIFICACIÓN CLAVE: Eliminar la bandera de "resuelto" al enviar un nuevo mensaje.
+      // Esto asegura que una nueva infracción en la misma sesión se trate como un nuevo incidente.
+      if(conversationId) localStorage.removeItem(`resolved_aurora_${conversationId}`);
+
+      if (!conversationId || sendBtn.disabled || isAlertActive) return;
+      const text = promptEl.value.trim();
+      if (!text) return;
+      appendMessage("user", text);
+      promptEl.value = "";
+      sendBtn.disabled = true; promptEl.disabled = true; logoutBtn.disabled = true;
+
+      const thinkingAnimationHtml = `<div class="thinking"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>`;
+      const botMsgEl = appendBubbleOnly("assistant", thinkingAnimationHtml, true);
+      messages.push({ role: "assistant", content: "" });
+
+      try {
+        const res = await fetch("https://xolo-ai-devtest.chat-gpt-bc7.workers.dev/chat", {
+          method: "POST", headers: { "Content-Type": "application/json", "x-user-uid": userUID },
+          body: JSON.stringify({ messages: messages.slice(0, -1), stream: USE_STREAMING, temperature: DEFAULT_TEMPERATURE, conversationId, ...(OVERRIDE_MODEL ? { model: OVERRIDE_MODEL } : {}) }),
+        });
+        if (!res.ok) { let e = `${res.status} ${res.statusText}`; try { const j = await res.json(); if (j?.message) e = j.message; } catch {} throw new Error(e); }
+        botMsgEl.innerHTML = ""; 
+        if (USE_STREAMING && res.body) {
+          const reader = res.body.getReader(); const decoder = new TextDecoder(); let done = false, acc = "";
+          while (!done) {
+            const { value, done: doneReading } = await reader.read(); done = doneReading;
+            const chunk = decoder.decode(value || new Uint8Array(), { stream: !done });
+            acc += chunk;
+            botMsgEl.textContent = acc.replace(/^data:\s*/gm, "").replace(/\n?data:\s*\[DONE\]\s*$/m, "");
+            scrollToEnd();
+          }
+          finalizeAssistantMessage(botMsgEl, botMsgEl.textContent);
+        } else { const data = await res.json(); finalizeAssistantMessage(botMsgEl, data?.text || "(sin respuesta)"); }
+      } catch (err) {
+        botMsgEl.innerHTML = ""; botMsgEl.textContent = `Error: ${err.message}`;
+        botMsgEl.style.boxShadow = "0 0 15px rgba(255, 50, 50, 0.4)";
+        finalizeAssistantMessage(botMsgEl, botMsgEl.textContent);
+      } finally {
+        if (!isAlertActive) { sendBtn.disabled = false; promptEl.disabled = false; logoutBtn.disabled = false; promptEl.focus(); }
+      }
+    }
+    
+    /* =========================
+     * 🧱 Utilidades UI/estado
+     * ========================= */
+    function appendBubbleOnly(role, content, isHtml = false) {
+      const el = document.createElement("div"); el.className = `msg ${role === "user" ? "user" : "bot"}`;
+      if (isHtml) { el.innerHTML = content; } else { el.textContent = content; }
+      chatEl.appendChild(el); scrollToEnd(); return el;
+    }
+    function appendMessage(role, text) {
+      if (role === "assistant") { const el = appendBubbleOnly("assistant", "", true); renderAssistantMarkdownInto(el, text); } 
+      else { appendBubbleOnly(role, text); }
+      messages.push({ role, content: text }); persistState();
+    }
+    function finalizeAssistantMessage(el, rawText) {
+      const lastIdx = messages.length - 1;
+      if (lastIdx >= 0 && messages[lastIdx].role === "assistant") { messages[lastIdx].content = rawText; persistState(); }
+      renderAssistantMarkdownInto(el, rawText); dispatchAssistantMessage(rawText);
+    }
+    function dispatchAssistantMessage(text) { window.dispatchEvent(new CustomEvent("chatbot:assistant_message", { detail: { text, conversationId, userUID } })); }
+    function scrollToEnd() { chatEl.scrollTop = chatEl.scrollHeight; }
+    function persistState() { if (!conversationId) return; localStorage.setItem(`msgs_${conversationId}`, JSON.stringify(messages)); }
+    function loadMessagesFor(cid) { try { const raw = localStorage.getItem(`msgs_${cid}`); return raw ? JSON.parse(raw) : []; } catch { return []; } }
+
+    /* ========================================================
+     * 🧩 Render Markdown + Bloques de código con botones (sin cambios)
+     * ======================================================== */
+    function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function markdownToHtml(md) {
+      if (!md) return "";
+      let text = md.replace(/\r\n/g, "\n"); const codeBlocks = [];
+      text = text.replace(/```([\w-]+)?\n([\s\S]*?)```/g, (m, lang, code) => { const idx = codeBlocks.length; codeBlocks.push({ lang: (lang || "").trim(), code: code.replace(/\n$/, "") }); return `{{{CODEBLOCK:${idx}}}}`; });
+      text = text.replace(/`([^`]+?)`/g, (_m, c) => `<code>${escapeHtml(c)}</code>`);
+      text = text.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>").replace(/^##\s+(.+)$/gm, "<h2>$1</h2>").replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+      text = text.replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+?)\*/g, "<em>$1</em>");
+      text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, `<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>`);
+      text = text.replace(/^(?:-|\*)\s+(.+)$/gm, "<li>$1</li>");
+      text = text.replace(/(<li>.*<\/li>)(\n<li>.*<\/li>)+/g, (m) => `<ul>${m.replace(/\n/g, "")}</ul>`);
+      text = text.replace(/^\d+\.\s+(.+)$/gm, "<li>$1</li>");
+      text = text.replace(/(<li>.*<\/li>)(\n<li>.*<\/li>)+/g, (m) => `<ol>${m.replace(/\n/g, "")}</ol>`);
+      const lines = text.split(/\n+/);
+      text = lines.map(line => { if (!line.trim()) return ""; if (/^<\/?(h\d|ul|ol|li|pre|code|blockquote)/.test(line.trim())) return line; return `<p>${line}</p>`; }).join("");
+      text = text.replace(/{{{CODEBLOCK:(\d+)}}}/g, (_m, iStr) => { const i = parseInt(iStr, 10); const { lang, code } = codeBlocks[i]; const langLabel = lang ? ` data-lang="${escapeHtml(lang)}"` : ""; const codeEsc = escapeHtml(code); return `<div class="code-block"><div class="code-actions"><span style="margin-right:auto; font-size:12px; color:var(--text-muted);">${lang ? escapeHtml(lang) : 'code'}</span><button class="btn-copy" title="Copiar código">Copiar</button><button class="btn-toggle" title="Colapsar/Expandir">Colapsar</button></div><div class="code-body"><pre><code${langLabel}>${codeEsc}</code></pre></div></div>`; });
+      return `<div class="md">${text}</div>`;
+    }
+    function renderAssistantMarkdownInto(containerEl, rawText) { containerEl.innerHTML = markdownToHtml(rawText); enhanceCodeBlocks(containerEl); }
+    function enhanceCodeBlocks(root) {
+      root.querySelectorAll(".code-block").forEach(block => {
+        const btnCopy = block.querySelector(".btn-copy"); const btnToggle = block.querySelector(".btn-toggle"); const body = block.querySelector(".code-body"); const codeEl = block.querySelector("pre code");
+        if (btnCopy && codeEl) { btnCopy.addEventListener("click", async () => { try { const text = codeEl.innerText; await navigator.clipboard.writeText(text); const prev = btnCopy.textContent; btnCopy.textContent = "Copiado ✓"; setTimeout(() => (btnCopy.textContent = prev), 1200); } catch { const prev = btnCopy.textContent; btnCopy.textContent = "Error"; setTimeout(() => (btnCopy.textContent = prev), 1200); } }); }
+        if (btnToggle && body) { btnToggle.addEventListener("click", () => { const collapsed = body.classList.toggle("collapsed"); btnToggle.textContent = collapsed ? "Expandir" : "Colapsar"; }); }
+      });
+    }
+  </script>
+</body>
+</html>
